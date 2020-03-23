@@ -4,15 +4,16 @@
 #include <string>
 
 int random(int min, int max);
-sf::Time set_drop_life();
+sf::Time setDropLife();
+bool checkRainOnTree(sf::RectangleShape drop);
+//Default main parameters
+    bool fullscreen = false;
+    int windowWidth = fullscreen? 1920 : 500;
+    int windowHeight = fullscreen? 1080 : 500;
+    int grassLevel = 20;
+    int rainSize = 100;
 
-int main(){
-
-    //Default main parameters
-        int window_widht =  500;
-        int window_height =  500;
-        int grass_level = 20;
-        int rain_size = 100;
+int main(int argc, char** argv){
 
     //Settings from the file 
         std::ifstream input;
@@ -20,7 +21,7 @@ int main(){
         if(input.is_open()){ 
             char c;
             bool flag = false;
-            std::string args[2];
+            std::string args[3];
             int i = 0;
             while(input.get(c)){
                 if ((int(c) >= 48)&&(int(c) <= 57)){
@@ -31,78 +32,119 @@ int main(){
                     i++;
                 };
             };
-            grass_level = std::stoi(args[0]);
-            rain_size = std::stoi(args[1]);    
+            fullscreen = std::stoi(args[0]);
+            windowWidth = fullscreen? 1920 : 500;
+            windowHeight = fullscreen? 1080 : 500;
+            grassLevel = std::stoi(args[1]);
+            rainSize = std::stoi(args[2]);    
         };
         input.close();
 
-
+    //Fullscreen from terminal (on/off)
+        if (argc > 1){
+            if (atoi(argv[1]) == 1 ){
+                fullscreen = true;
+                windowWidth = 1920;
+                windowHeight = 1080;
+            }else if (atoi(argv[1]) == 0 ){
+                fullscreen = false;
+                windowWidth = 500;
+                windowHeight = 500;
+            }
+        };
 
     //Create window
-        sf::RenderWindow window(sf::VideoMode(window_widht,window_height), "Game :)",sf::Style::Close);
-        window.setPosition(sf::Vector2i(300,200));
+        sf::RenderWindow window(sf::VideoMode(windowWidth,windowHeight), "Game :)",(fullscreen?  sf::Style::Fullscreen : sf::Style::Close ) );
+        if (!fullscreen){
+            window.setPosition(sf::Vector2i(300,200));
+        };
         window.setFramerateLimit(60);
 
     // Grass
-        sf::RectangleShape grass(sf::Vector2f(window_widht,grass_level));
+        sf::RectangleShape grass(sf::Vector2f(windowWidth,grassLevel));
         grass.setFillColor(sf::Color(0,255,0));
-        grass.setPosition(0,window_height-grass_level );
+        grass.setPosition(0,windowHeight-grassLevel );
 
-    // Tree   
+    // Tree 500x500  
+
+        int treePosition[2];
+        int treeSize[2];
         sf::RectangleShape wood(sf::Vector2f(15,100));
-        wood.setFillColor(sf::Color(81,54,26));
-        wood.setPosition(4*window_widht/5  ,window_height-grass_level-100);
         sf::ConvexShape foliage(4);
-        foliage.setPoint(0,sf::Vector2f(4*window_widht/5 - 30, window_height-grass_level-150));
-        foliage.setPoint(1,sf::Vector2f(4*window_widht/5 + 45, window_height-grass_level-150));
-        foliage.setPoint(2,sf::Vector2f(4*window_widht/5 + 45, window_height-grass_level-60));
-        foliage.setPoint(3,sf::Vector2f(4*window_widht/5 - 30, window_height-grass_level-60));
-        foliage.setFillColor(sf::Color::Green);
-    
-    //Rain
-        int count_drop = 0;
-        sf::RectangleShape drop[rain_size];
-        int drop_size = 3;
-        for(int i = 0; i < rain_size ;i++){
-            drop[i].setSize(sf::Vector2f(drop_size,drop_size));
-            drop[i].setFillColor(sf::Color::Cyan);
-            drop[i].setPosition(0,window_height);
+
+        if (!fullscreen){
+            treeSize[0] = 75;
+            treeSize[1] = 150; 
+            treePosition[0] = 350; //windowWidth - 2*treeSize[0]; 
+            treePosition[1] = 350-grassLevel; //windowHeight - treeSize[1] - grassLevel;
+            wood.setFillColor(sf::Color(81,54,26));
+            wood.setPosition(380, 400-grassLevel);
+            foliage.setPoint(0,sf::Vector2f(treePosition[0], treePosition[1]));
+            foliage.setPoint(1,sf::Vector2f(treePosition[0]+treeSize[0], treePosition[1]));
+            foliage.setPoint(2,sf::Vector2f(treePosition[0]+treeSize[0], 440-grassLevel));
+            foliage.setPoint(3,sf::Vector2f(treePosition[0], 440-grassLevel));
+            foliage.setFillColor(sf::Color::Green);
+        }
+
+    //Tree fullscreen
+        sf::Texture texture;
+        sf::Sprite sprite;
+
+        if (fullscreen){
+            treeSize[0] = 340;
+            treeSize[1] = 390; 
+            treePosition[0] = windowWidth - 2*treeSize[0]; //1240;  
+            treePosition[1] = windowHeight - treeSize[1] - grassLevel; //690-grassLevel;
+            texture.loadFromFile("image/tree.png");
+            sprite.setTexture(texture);
+            sprite.setPosition(treePosition[0],treePosition[1]);
         };
-        sf::Time drop_life[rain_size];
-        for(int i = 0; i<rain_size; i++){
-            drop_life[i] = sf::milliseconds(random(0,10000)); //set_drop_life();
+        int treeEnd = treePosition[0]+treeSize[0];
+
+        
+
+    //Rain
+        bool rain = true; 
+        int countDrop = 0;
+        sf::RectangleShape drop[rainSize];
+        int dropSize = fullscreen ? 6:3;
+        for(int i = 0; i < rainSize ;i++){
+            drop[i].setSize(sf::Vector2f(dropSize,dropSize));
+            drop[i].setFillColor(sf::Color::Cyan);
+            drop[i].setPosition(random(0,windowWidth),windowHeight);
+        };
+        sf::Time dropLife[rainSize];
+        for(int i = 0; i<rainSize; i++){
+            dropLife[i] = sf::milliseconds(random(0,10000)); 
         };
 
     //Game time
-        sf::Clock main_clock;
-        sf::Clock clock1;
+        sf::Clock mainClock;
+        sf::Clock clock;
 
     while (window.isOpen()){ //Main loop
 
-        float time = clock1.restart().asMicroseconds();
-        time = time/1000 ;
+        float time = clock.restart().asMicroseconds();
+        time = fullscreen ? time/500 : time/1000 ;
         //Movement of drops
-        for(int i = 0; i< rain_size; i++){
+        for(int i = 0; i< rainSize; i++){
             //Respawn drop
-            if (main_clock.getElapsedTime() > drop_life[i] ){
-                drop[i].setPosition(random(0,window_widht),0); 
-                drop_life[i] += set_drop_life();
-                count_drop++;
+            if (mainClock.getElapsedTime() > dropLife[i] ){
+                drop[i].setPosition(random(0,windowWidth),0); 
+                dropLife[i] += setDropLife();
+                countDrop++;
             }; 
-            //If tree
-            if (((drop[i].getPosition().x >= 4*window_widht/5 - 30)&&
-                (drop[i].getPosition().x <= 4*window_widht/5 + 45)&&
-                (drop[i].getPosition().y <= window_height-grass_level-60)&&
-                (drop[i].getPosition().y >= window_height-grass_level-150))||
-                ((drop[i].getPosition().x >= 4*window_widht/5)&&
-                (drop[i].getPosition().x <= 4*window_widht/5 + 15 - drop_size/2)&&
-                (drop[i].getPosition().y >= window_height-grass_level-60)&&
-                (drop[i].getPosition().y <= window_height-grass_level-drop_size))){
-                    //Move slowly
-                    if (random(0,2)){
-                        drop[i].move(0,0.02*time*random(1, 4)); 
+            //If tree zone
+            if ((drop[i].getPosition().x >= treePosition[0])&&
+                (drop[i].getPosition().x <= (treeEnd))){
+                    //If tree
+                    if(checkRainOnTree(drop[i])) {
+                        //Move slowly
+                        drop[i].move(0,0.01*time*random(1, 4));
+                    }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
+                        drop[i].move(0,0.1*time*random(1, 4));
                     };
-            }else if (drop[i].getPosition().y <= window_height-grass_level-drop_size){
+            }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
                 drop[i].move(0,0.1*time*random(1, 4)); 
             };
         };
@@ -115,22 +157,26 @@ int main(){
             if (event.type == sf::Event::Closed)
                 window.close();
         };
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+        if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))&&
+            (sf::Keyboard::isKeyPressed(sf::Keyboard::End))){
             window.close();
         };
         
-
         window.clear();
-        window.draw(foliage);
-        window.draw(wood);
         window.draw(grass);
-        for(int i = 0; i < rain_size;i++) window.draw(drop[i]);
+        if(fullscreen) {
+            window.draw(sprite);
+        }else{
+            window.draw(foliage);
+            window.draw(wood);
+        };
+        for(int i = 0; i < rainSize;i++) window.draw(drop[i]);
         window.display();
     };
     //Save information
         std::ofstream output;
         output.open("status.txt");
-        output<< "Всього випало крапель дощу: "<<count_drop <<'\n';
+        output<< "Всього випало крапель дощу: "<<countDrop <<'\n';
         output.close();
 
     return 0;
@@ -140,6 +186,35 @@ int random(int min,int max ){
     return std::rand()%(max-min)+min;
 }
 
-sf::Time set_drop_life(){
+sf::Time setDropLife(){
     return sf::milliseconds(random(6000,15000));
+};
+
+bool checkRainOnTree(sf::RectangleShape drop){
+    if(!fullscreen){
+        int x = drop.getPosition().x;
+        int y = drop.getPosition().y;
+        return ((( x >= 350)&&
+                ( x <= 425)&&
+                ( y <= 440-grassLevel)&&
+                ( y >= 350-grassLevel))||
+                (( x >= 380)&&
+                ( x <= 394)&&
+                ( y >= 440-grassLevel)&&
+                ( y <= 497-grassLevel)));
+    }else if( drop.getPosition().y > 690-grassLevel){
+        int x = drop.getPosition().x;
+        int y = drop.getPosition().y;
+        if(( x >= 1240)&&( x <= 1377)&&( y >= 710-grassLevel)&&( y <= 860-grassLevel))
+            return true;
+        if(( x >= 1400)&&( x <= 1577)&&( y >= 690-grassLevel)&&( y <= 840-grassLevel))
+            return true;
+        if(( x >= 1430)&&( x <= 1527)&&( y >= 840-grassLevel)&&( y <= 890-grassLevel))
+            return true;
+        if(( x >= 1280)&&( x <= 1347)&&( y >= 860-grassLevel)&&( y <= 910-grassLevel))
+            return true;
+        if(( x >= 1370)&&( x <= 1427)&&( y >= 890-grassLevel)&&( y <= 1080-grassLevel))
+            return true;
+    };
+    return false;
 };
