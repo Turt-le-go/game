@@ -4,7 +4,7 @@
 #include <string>
 
 int random(int min, int max);
-sf::Time setDropLife();
+void respawnDrop(sf::RectangleShape &drop);
 bool checkRainOnTree(sf::RectangleShape drop);
 //Default main parameters
     bool fullscreen = false;
@@ -12,6 +12,8 @@ bool checkRainOnTree(sf::RectangleShape drop);
     int windowHeight = fullscreen? 1080 : 500;
     int grassLevel = 20;
     int rainSize = 100;
+//Wind
+    int wind = 0;
 
 int main(int argc, char** argv){
 
@@ -121,6 +123,7 @@ int main(int argc, char** argv){
     //Game time
         sf::Clock mainClock;
         sf::Clock clock;
+        sf::Clock windClock;
 
     while (window.isOpen()){ //Main loop
 
@@ -130,8 +133,8 @@ int main(int argc, char** argv){
         for(int i = 0; i< rainSize; i++){
             //Respawn drop
             if (mainClock.getElapsedTime() > dropLife[i] ){
-                drop[i].setPosition(random(0,windowWidth),0); 
-                dropLife[i] += setDropLife();
+                respawnDrop(drop[i]);  
+                dropLife[i] += sf::milliseconds(random(6000,15000));
                 countDrop++;
             }; 
             //If tree zone
@@ -140,27 +143,39 @@ int main(int argc, char** argv){
                     //If tree
                     if(checkRainOnTree(drop[i])) {
                         //Move slowly
-                        drop[i].move(0,0.01*time*random(1, 4));
+                        drop[i].move(0+wind/10,0.01*time*random(1, 4));
                     }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
-                        drop[i].move(0,0.1*time*random(1, 4));
+                        drop[i].move(0+wind,0.1*time*random(1, 4));
                     };
             }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
-                drop[i].move(0,0.1*time*random(1, 4)); 
+                drop[i].move(0+wind,0.1*time*random(1, 4)); 
             };
         };
 
-
-
+        //Close game
         sf::Event event;
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
                 window.close();
         };
+        //Close game secret combination(Esc+End)
         if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))&&
             (sf::Keyboard::isKeyPressed(sf::Keyboard::End))){
-            window.close();
+                window.close();
         };
+        //Wind is blowing?
+        if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Right))&&
+            (windClock.getElapsedTime().asSeconds() > 1)){
+                windClock.restart();
+                wind++;
+        };
+        if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Left))&&
+            (windClock.getElapsedTime().asSeconds() > 1)){
+                windClock.restart();
+                wind--;
+        };
+        
         
         window.clear();
         window.draw(grass);
@@ -185,9 +200,14 @@ int main(int argc, char** argv){
 int random(int min,int max ){
     return std::rand()%(max-min)+min;
 }
-
-sf::Time setDropLife(){
-    return sf::milliseconds(random(6000,15000));
+void respawnDrop(sf::RectangleShape &drop){
+    if (wind == 0){
+        drop.setPosition(std::rand()%windowWidth,0);
+    }else if(wind > 0){
+        drop.setPosition(std::rand()%(windowWidth+wind*130)-wind*130,0);
+    }else{
+        drop.setPosition(std::rand()%(windowWidth-wind*130),0);        
+    }
 };
 
 bool checkRainOnTree(sf::RectangleShape drop){

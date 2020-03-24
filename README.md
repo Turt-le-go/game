@@ -1,5 +1,5 @@
 # Game
-
+ 
 Added:
 ---
 * Wind 
@@ -19,5 +19,11 @@ Wind:
 ---
 
  Press left or right key to control the wind.
+
+
+
+
+
+
 
 
