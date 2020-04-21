@@ -2,6 +2,7 @@
  
 Added:
 ---
+* Rain on/off
 * Wind 
 * Fullscreen mode
 * New tree
@@ -19,6 +20,11 @@ Wind:
 ---
 
  Press left or right key to control the wind.
+
+Rain:
+---
+
+ Press R to start / stop rain.
 
 
 
