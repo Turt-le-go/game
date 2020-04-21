@@ -12,9 +12,9 @@ Fullscreen mode:
 
  You can change video mode in file settings.txt or from terminal:
  
- ```./Game_v0.2 1``` - to launch the game in fullscreen,
+ ```./game 1``` - to launch the game in fullscreen,
  
- ```./Game_v0.2 0``` - to start the game in window mode.
+ ```./game 0``` - to start the game in window mode.
 
 Wind:
 ---
@@ -26,10 +26,19 @@ Rain:
 
  Press R to start / stop rain.
 
+Run:
+---
 
+ Firstly, install SFML:
 
+  ```sudo pacman -S sfml``` - for Archlinux,
 
+  ```sudo apt-get install libsfml-dev``` - for Debian.
 
+ Then, you can run game:
 
+  ```./game```
 
+  Also, if you want to recompile game, run:
 
+  ```g++ -c main.cpp; g++ main.o -o game -lsfml-graphics -lsfml-window -lsfml-system; rm main.o;```
