@@ -12,6 +12,7 @@ bool checkRainOnTree(sf::RectangleShape drop);
     int windowHeight = fullscreen? 1080 : 500;
     int grassLevel = 20;
     int rainSize = 100;
+    bool rain = true;
 //Wind
     int wind = 0;
 
@@ -67,46 +68,30 @@ int main(int argc, char** argv){
         grass.setFillColor(sf::Color(0,255,0));
         grass.setPosition(0,windowHeight-grassLevel );
 
-    // Tree 500x500  
-
+    // Tree  
+        sf::Texture texture;
+        sf::Sprite sprite;
         int treePosition[2];
         int treeSize[2];
-        sf::RectangleShape wood(sf::Vector2f(15,100));
-        sf::ConvexShape foliage(4);
 
         if (!fullscreen){
             treeSize[0] = 75;
             treeSize[1] = 150; 
-            treePosition[0] = 350; //windowWidth - 2*treeSize[0]; 
-            treePosition[1] = 350-grassLevel; //windowHeight - treeSize[1] - grassLevel;
-            wood.setFillColor(sf::Color(81,54,26));
-            wood.setPosition(380, 400-grassLevel);
-            foliage.setPoint(0,sf::Vector2f(treePosition[0], treePosition[1]));
-            foliage.setPoint(1,sf::Vector2f(treePosition[0]+treeSize[0], treePosition[1]));
-            foliage.setPoint(2,sf::Vector2f(treePosition[0]+treeSize[0], 440-grassLevel));
-            foliage.setPoint(3,sf::Vector2f(treePosition[0], 440-grassLevel));
-            foliage.setFillColor(sf::Color::Green);
-        }
-
-    //Tree fullscreen
-        sf::Texture texture;
-        sf::Sprite sprite;
-
-        if (fullscreen){
+            texture.loadFromFile("image/tree0.png");
+        }else{
             treeSize[0] = 340;
             treeSize[1] = 390; 
-            treePosition[0] = windowWidth - 2*treeSize[0]; //1240;  
-            treePosition[1] = windowHeight - treeSize[1] - grassLevel; //690-grassLevel;
-            texture.loadFromFile("image/tree.png");
-            sprite.setTexture(texture);
-            sprite.setPosition(treePosition[0],treePosition[1]);
+            texture.loadFromFile("image/tree1.png");
         };
+        treePosition[0] = windowWidth - 2*treeSize[0];
+        treePosition[1] = windowHeight - treeSize[1] - grassLevel;
+        sprite.setTexture(texture);
+        sprite.setPosition(treePosition[0],treePosition[1]);
         int treeEnd = treePosition[0]+treeSize[0];
 
         
 
-    //Rain
-        bool rain = true; 
+    //Rain 
         int countDrop = 0;
         sf::RectangleShape drop[rainSize];
         int dropSize = fullscreen ? 6:3;
@@ -123,12 +108,12 @@ int main(int argc, char** argv){
     //Game time
         sf::Clock mainClock;
         sf::Clock clock;
-        sf::Clock windClock;
-
+        sf::Clock onOffClock;
     while (window.isOpen()){ //Main loop
 
         float time = clock.restart().asMicroseconds();
         time = fullscreen ? time/500 : time/1000 ;
+    
         //Movement of drops
         for(int i = 0; i< rainSize; i++){
             //Respawn drop
@@ -166,25 +151,26 @@ int main(int argc, char** argv){
         };
         //Wind is blowing?
         if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Right))&&
-            (windClock.getElapsedTime().asSeconds() > 1)){
-                windClock.restart();
+            (onOffClock.getElapsedTime().asSeconds() > 0.25)){
+                onOffClock.restart();
                 wind++;
         };
         if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Left))&&
-            (windClock.getElapsedTime().asSeconds() > 1)){
-                windClock.restart();
+            (onOffClock.getElapsedTime().asSeconds() > 0.25)){
+                onOffClock.restart();
                 wind--;
+        };
+        //Rain?
+        if((sf::Keyboard::isKeyPressed(sf::Keyboard::R))&&
+            (onOffClock.getElapsedTime().asSeconds() > 0.25)){
+                onOffClock.restart();
+                rain = (rain ? false :true);
         };
         
         
         window.clear();
         window.draw(grass);
-        if(fullscreen) {
-            window.draw(sprite);
-        }else{
-            window.draw(foliage);
-            window.draw(wood);
-        };
+        window.draw(sprite);
         for(int i = 0; i < rainSize;i++) window.draw(drop[i]);
         window.display();
     };
@@ -201,12 +187,16 @@ int random(int min,int max ){
     return std::rand()%(max-min)+min;
 }
 void respawnDrop(sf::RectangleShape &drop){
-    if (wind == 0){
-        drop.setPosition(std::rand()%windowWidth,0);
-    }else if(wind > 0){
-        drop.setPosition(std::rand()%(windowWidth+wind*130)-wind*130,0);
+    if(rain){
+        if (wind == 0){
+            drop.setPosition(std::rand()%windowWidth,0);
+        }else if(wind > 0){
+            drop.setPosition(std::rand()%(windowWidth+wind*150)-wind*150,0);
+        }else{
+            drop.setPosition(std::rand()%(windowWidth-wind*150),0);
+        }        
     }else{
-        drop.setPosition(std::rand()%(windowWidth-wind*130),0);        
+        drop.setPosition(std::rand()%windowWidth,windowHeight);
     }
 };
 
