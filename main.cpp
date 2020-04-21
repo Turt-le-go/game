@@ -204,9 +204,9 @@ void respawnDrop(sf::RectangleShape &drop){
     if (wind == 0){
         drop.setPosition(std::rand()%windowWidth,0);
     }else if(wind > 0){
-        drop.setPosition(std::rand()%(windowWidth+wind*130)-wind*130,0);
+        drop.setPosition(std::rand()%(windowWidth+wind*150)-wind*150,0);
     }else{
-        drop.setPosition(std::rand()%(windowWidth-wind*130),0);        
+        drop.setPosition(std::rand()%(windowWidth-wind*150),0);        
     }
 };
 
