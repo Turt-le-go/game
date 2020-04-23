@@ -2,40 +2,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "include/path.h"
+#include "include/Drop.h"
 
-class Drop : public sf::RectangleShape {
-    private:
-        float speed;
-        sf::Time life;
-    public:
 
-        Drop(){
-            this->setFillColor(sf::Color::Cyan);
-            this->life = sf::milliseconds(std::rand()%10000);
-            speed = 0.08*(std::rand()%3+3);
-        };
-        void respawn(bool rain,int wind, int windowWidth, int windowHeight){
-            if(rain){
-                if (wind == 0){
-                    this->setPosition(std::rand()%windowWidth,0);
-                }else if(wind > 0){
-                    this->setPosition(std::rand()%(windowWidth+wind*150)-wind*150,0);
-                }else{
-                    this->setPosition(std::rand()%(windowWidth-wind*150),0);
-                };     
-            }else{
-                this->setPosition(std::rand()%windowWidth,windowHeight);
-            };
-            this->life += sf::milliseconds(std::rand()%9000+6000);
-        };
-        sf::Time getLife(){
-            return this->life;
-        };
-        float getSpeed(){
-            return this->speed;
-        };
-
-};
 bool checkRainOnTree(Drop drop);
 //Default main parameters
     bool fullscreen = false;
@@ -50,7 +20,7 @@ bool checkRainOnTree(Drop drop);
 int main(int argc, char** argv){
     //Settings from the file 
         std::ifstream input;
-        input.open("settings.txt");
+        input.open(getGameDir() + "/data/settings.txt");
         if(input.is_open()){ 
             char c;
             bool flag = false;
@@ -107,11 +77,11 @@ int main(int argc, char** argv){
         if (!fullscreen){
             treeSize[0] = 75;
             treeSize[1] = 150; 
-            texture.loadFromFile("image/tree0.png");
+            texture.loadFromFile(getGameDir() + "/image/tree0.png");
         }else{
             treeSize[0] = 340;
             treeSize[1] = 390; 
-            texture.loadFromFile("image/tree1.png");
+            texture.loadFromFile(getGameDir() + "/image/tree1.png");
         };
         treePosition[0] = windowWidth - 2*treeSize[0];
         treePosition[1] = windowHeight - treeSize[1] - grassLevel;
@@ -200,7 +170,7 @@ int main(int argc, char** argv){
     };
     //Save information
         std::ofstream output;
-        output.open("status.txt");
+        output.open(getGameDir() + "/data/status.txt");
         output<< "Всього випало крапель дощу: "<<countDrop <<'\n';
         output.close();
 

@@ -1,0 +1,2 @@
+#!/bin/bash
+g++ -c src/*.cpp; g++ *.o -o bin/game -lsfml-graphics -lsfml-window -lsfml-system; rm *.o;
