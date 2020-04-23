@@ -35,10 +35,16 @@ Run:
 
   ```sudo apt-get install libsfml-dev``` - for Debian.
 
- Then, you can run game:
+ Secondly, clone this repository:
 
-  ```./game```
+  ```git clone https://github.com/Turt-le-go/game.git```
 
-  Also, if you want to recompile game, run:
+ Then, open folder and build program:
 
-  ```g++ -c main.cpp; g++ main.o -o game -lsfml-graphics -lsfml-window -lsfml-system; rm main.o;```
+ ```cd game```
+
+ ```chmod a+x build; ./build```
+
+ Finally, you can run the game:
+
+ ```./game```

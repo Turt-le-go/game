@@ -1,2 +1,9 @@
 #!/bin/bash
-g++ -c src/*.cpp; g++ *.o -o game -lsfml-graphics -lsfml-window -lsfml-system; rm *.o;
+g++ -c src/*.cpp
+
+g++ *.o -o game -lsfml-graphics -lsfml-window -lsfml-system
+
+rm *.o
+
+xdg-open README.md &
+
