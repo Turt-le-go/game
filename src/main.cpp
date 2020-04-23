@@ -73,15 +73,16 @@ int main(int argc, char** argv){
         sf::Sprite sprite;
         int treePosition[2];
         int treeSize[2];
+        bool treeInGame;
 
         if (!fullscreen){
             treeSize[0] = 75;
             treeSize[1] = 150; 
-            texture.loadFromFile(getGameDir() + "/image/tree0.png");
+            treeInGame = texture.loadFromFile(getGameDir() + "/image/tree0.png");
         }else{
             treeSize[0] = 340;
             treeSize[1] = 390; 
-            texture.loadFromFile(getGameDir() + "/image/tree1.png");
+            treeInGame = texture.loadFromFile(getGameDir() + "/image/tree1.png");
         };
         treePosition[0] = windowWidth - 2*treeSize[0];
         treePosition[1] = windowHeight - treeSize[1] - grassLevel;
@@ -116,16 +117,20 @@ int main(int argc, char** argv){
                     drop[i].respawn(rain, wind, windowWidth, windowHeight);
                     countDrop++;
                 }; 
+                if (treeInGame){
                 //If tree zone
-                if ((drop[i].getPosition().x >= treePosition[0])&&
-                    (drop[i].getPosition().x <= (treeEnd))){
-                        //If tree
-                        if(checkRainOnTree(drop[i])) {
-                            //Move slowly
-                            drop[i].move(0+wind/10,0.1*time*drop[i].getSpeed());
-                        }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
-                            drop[i].move(0+wind,time*drop[i].getSpeed());
-                        };
+                    if ((drop[i].getPosition().x >= treePosition[0])&&
+                        (drop[i].getPosition().x <= (treeEnd))){
+                            //If tree
+                            if(checkRainOnTree(drop[i])) {
+                                //Move slowly
+                                drop[i].move(0+wind/10,0.1*time*drop[i].getSpeed());
+                            }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
+                                drop[i].move(0+wind,time*drop[i].getSpeed());
+                            };
+                    }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
+                        drop[i].move(0+wind,time*drop[i].getSpeed()); 
+                    };
                 }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
                     drop[i].move(0+wind,time*drop[i].getSpeed()); 
                 };

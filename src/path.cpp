@@ -11,6 +11,6 @@ std::string getPath(){
 std::string  getGameDir(){
     std::string path = getPath();
     
-    path = path.substr(0,path.rfind("/bin/"));
+    path = path.substr(0,path.rfind("/"));
     return path;
 };
