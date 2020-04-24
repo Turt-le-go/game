@@ -8,9 +8,10 @@
 
 bool checkRainOnTree(Drop drop);
 //Default main parameters
+    Display display = getDisplaySize();
     bool fullscreen = false;
-    int windowWidth = fullscreen? 1920 : 500;
-    int windowHeight = fullscreen? 1080 : 500;
+    int windowWidth = fullscreen? display.width : 500;
+    int windowHeight = fullscreen? display.height : 500;
     int grassLevel = 20;
     int rainSize = 100;
     bool rain = true;
@@ -36,8 +37,8 @@ int main(int argc, char** argv){
                 };
             };
             fullscreen = std::stoi(args[0]);
-            windowWidth = fullscreen? 1920 : 500;
-            windowHeight = fullscreen? 1080 : 500;
+            windowWidth = fullscreen? display.width : 500;
+            windowHeight = fullscreen? display.height : 500;
             grassLevel = std::stoi(args[1]);
             rainSize = std::stoi(args[2]);    
         };
@@ -47,8 +48,8 @@ int main(int argc, char** argv){
         if (argc > 1){
             if (atoi(argv[1]) == 1 ){
                 fullscreen = true;
-                windowWidth = 1920;
-                windowHeight = 1080;
+                windowWidth = display.width;
+                windowHeight = display.height;
             }else if (atoi(argv[1]) == 0 ){
                 fullscreen = false;
                 windowWidth = 500;
