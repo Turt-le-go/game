@@ -12,7 +12,7 @@ bool checkRainOnTree(Drop drop);
     bool fullscreen = false;
     int windowWidth = fullscreen? display.width : 500;
     int windowHeight = fullscreen? display.height : 500;
-    int grassLevel = 20;
+    int grassLevel = 0.0463 * 1080; //0.000043*1080^2
     int rainSize = 100;
     bool rain = true;
 //Wind
@@ -65,13 +65,55 @@ int main(int argc, char** argv){
         window.setFramerateLimit(60);
 
     // Grass
-        sf::RectangleShape grass(sf::Vector2f(windowWidth,grassLevel));
-        grass.setFillColor(sf::Color(0,255,0));
-        grass.setPosition(0,windowHeight-grassLevel );
+        sf::Texture textureGrass;
+        bool grassInGame = textureGrass.loadFromFile(getGameDir() + "/image/grass.png");
+        int grassCount = (grassInGame) ? windowWidth/textureGrass.getSize().x + bool(windowWidth%textureGrass.getSize().x) : 0;
+        sf::Sprite grass[grassCount];
+        if (!(grassInGame && (grassLevel > 0))){
+            grassLevel = 0;
+            grassInGame = false;
+        };
+        for(int i = 0; i < grassCount; i++){
+            grass[i].setTexture(textureGrass);
+            grass[i].setPosition(i*textureGrass.getSize().x,windowHeight-grassLevel);
+        };  
+
+    // Earth 
+        sf::Texture textureEarth;
+        bool earthInGame = textureEarth.loadFromFile(getGameDir() + "/image/earth.png");
+        int earthCount[]{0,0}; 
+        if (grassInGame && (grassLevel > textureGrass.getSize().y)){
+            if (earthInGame){
+                earthCount[0] = (grassLevel - textureGrass.getSize().y)/textureEarth.getSize().y + bool((grassLevel - textureGrass.getSize().y)%textureEarth.getSize().y);
+                earthCount[1] = windowWidth/textureEarth.getSize().x + bool(windowWidth%textureEarth.getSize().x);
+            }else{
+                grassLevel = textureGrass.getSize().y;
+            };
+        };
+        sf::Sprite earth[earthCount[0]][earthCount[1]];
+        for(int i = 0; i < earthCount[0]; i++){
+            for(int j = 0; j < earthCount[1]; j++){
+                earth[i][j].setTexture(textureEarth);
+                earth[i][j].setPosition(j*textureEarth.getSize().x, windowHeight-grassLevel + textureGrass.getSize().y + i * textureEarth.getSize().y);
+            };
+        };
+
+    //Herb
+        std::srand(time(0));
+        int textureHerbCount = 5;
+        sf::Texture textureHerb;
+        bool herbInGame = textureHerb.loadFromFile(getGameDir()+"/image/herb.png");
+        int herbCount = (herbInGame)? std::rand()%int((windowWidth/(textureHerb.getSize().x/textureHerbCount))/4):0;
+        sf::Sprite herb[herbCount];
+        for(int i = 0; i< herbCount; i++){
+            herb[i].setTexture(textureHerb);
+            herb[i].setTextureRect(sf::IntRect((std::rand()%textureHerbCount)*(textureHerb.getSize().x/textureHerbCount),0,textureHerb.getSize().x/textureHerbCount,textureHerb.getSize().y));
+            herb[i].setPosition(std::rand()%windowWidth, windowHeight - grassLevel - textureHerb.getSize().y);
+        };
 
     // Tree  
-        sf::Texture texture;
-        sf::Sprite sprite;
+        sf::Texture textureTree;
+        sf::Sprite tree;
         int treePosition[2];
         int treeSize[2];
         bool treeInGame;
@@ -79,16 +121,16 @@ int main(int argc, char** argv){
         if (!fullscreen){
             treeSize[0] = 75;
             treeSize[1] = 150; 
-            treeInGame = texture.loadFromFile(getGameDir() + "/image/tree0.png");
+            treeInGame = textureTree.loadFromFile(getGameDir() + "/image/tree0.png");
         }else{
             treeSize[0] = 340;
             treeSize[1] = 390; 
-            treeInGame = texture.loadFromFile(getGameDir() + "/image/tree1.png");
+            treeInGame = textureTree.loadFromFile(getGameDir() + "/image/tree1.png");
         };
         treePosition[0] = windowWidth - 2*treeSize[0];
         treePosition[1] = windowHeight - treeSize[1] - grassLevel;
-        sprite.setTexture(texture);
-        sprite.setPosition(treePosition[0],treePosition[1]);
+        tree.setTexture(textureTree);
+        tree.setPosition(treePosition[0],treePosition[1]);
         int treeEnd = treePosition[0]+treeSize[0];
 
         
@@ -96,7 +138,7 @@ int main(int argc, char** argv){
     //Rain 
         int countDrop = 0;
         Drop drop[rainSize];
-        int dropSize = fullscreen ? 6:3;
+        int dropSize = fullscreen ? 5:3;
         for(int i = 0; i < rainSize ;i++){
             drop[i].setSize(sf::Vector2f(dropSize,dropSize));
             drop[i].setPosition( std::rand()%windowWidth ,windowHeight);
@@ -169,9 +211,24 @@ int main(int argc, char** argv){
         
         //Draw objects    
             window.clear();
-            window.draw(grass);
-            window.draw(sprite);
-            for(int i = 0; i < rainSize;i++) window.draw(drop[i]);
+            if (earthInGame)
+                for(int i = 0; i < earthCount[0]; i++)
+                    for(int j = 0; j < earthCount[1]; j++)
+                        window.draw(earth[i][j]);
+
+            if (grassInGame) 
+                for(int i = 0; i < grassCount; i++) 
+                    window.draw(grass[i]);
+
+            if(treeInGame) 
+                window.draw(tree);
+
+            if(herbInGame)
+                for(int i = 0; i< herbCount; i++)
+                    window.draw(herb[i]);
+
+            for(int i = 0; i < rainSize;i++) 
+                window.draw(drop[i]);
             window.display();
     };
     //Save information
