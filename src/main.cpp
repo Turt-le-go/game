@@ -4,7 +4,7 @@
 #include <string>
 #include "include/path.h"
 #include "include/Drop.h"
-
+#include "include/Tree.h"
 
 bool checkRainOnTree(Drop drop);
 //Default main parameters
@@ -12,7 +12,7 @@ bool checkRainOnTree(Drop drop);
     bool fullscreen = false;
     int windowWidth = fullscreen? display.width : 500;
     int windowHeight = fullscreen? display.height : 500;
-    int grassLevel = 0.0463 * 1080; //0.000043*1080^2
+    int grassLevel = 50;
     int rainSize = 100;
     bool rain = true;
 //Wind
@@ -21,7 +21,7 @@ bool checkRainOnTree(Drop drop);
 int main(int argc, char** argv){
     //Settings from the file 
         std::ifstream input;
-        input.open(getGameDir() + "/data/settings.txt");
+        input.open(getGameDir() + "data/settings.txt");
         if(input.is_open()){ 
             char c;
             bool flag = false;
@@ -64,9 +64,9 @@ int main(int argc, char** argv){
         };
         window.setFramerateLimit(60);
 
-    // Grass
+    //Grass
         sf::Texture textureGrass;
-        bool grassInGame = textureGrass.loadFromFile(getGameDir() + "/image/grass.png");
+        bool grassInGame = textureGrass.loadFromFile(getGameDir() + "image/grass.png");
         int grassCount = (grassInGame) ? windowWidth/textureGrass.getSize().x + bool(windowWidth%textureGrass.getSize().x) : 0;
         sf::Sprite grass[grassCount];
         if (!(grassInGame && (grassLevel > 0))){
@@ -78,9 +78,9 @@ int main(int argc, char** argv){
             grass[i].setPosition(i*textureGrass.getSize().x,windowHeight-grassLevel);
         };  
 
-    // Earth 
+    //Earth 
         sf::Texture textureEarth;
-        bool earthInGame = textureEarth.loadFromFile(getGameDir() + "/image/earth.png");
+        bool earthInGame = textureEarth.loadFromFile(getGameDir() + "image/earth.png");
         int earthCount[]{0,0}; 
         if (grassInGame && (grassLevel > textureGrass.getSize().y)){
             if (earthInGame){
@@ -102,7 +102,7 @@ int main(int argc, char** argv){
         std::srand(time(0));
         int textureHerbCount = 5;
         sf::Texture textureHerb;
-        bool herbInGame = textureHerb.loadFromFile(getGameDir()+"/image/herb.png");
+        bool herbInGame = textureHerb.loadFromFile(getGameDir()+"image/herb.png");
         int herbCount = (herbInGame)? std::rand()%int((windowWidth/(textureHerb.getSize().x/textureHerbCount))/4):0;
         sf::Sprite herb[herbCount];
         for(int i = 0; i< herbCount; i++){
@@ -111,30 +111,23 @@ int main(int argc, char** argv){
             herb[i].setPosition(std::rand()%windowWidth, windowHeight - grassLevel - textureHerb.getSize().y);
         };
 
-    // Tree  
-        sf::Texture textureTree;
-        sf::Sprite tree;
-        int treePosition[2];
-        int treeSize[2];
+    //Tree  
+        Tree tree;
         bool treeInGame;
-
         if (!fullscreen){
-            treeSize[0] = 75;
-            treeSize[1] = 150; 
-            treeInGame = textureTree.loadFromFile(getGameDir() + "/image/tree0.png");
+            treeInGame = tree.setImage(getGameDir() + "image/tree0.png");
+            tree.setRectangle(0,0,75,90);
+            tree.setRectangle(30,90,15,60);
         }else{
-            treeSize[0] = 340;
-            treeSize[1] = 390; 
-            treeInGame = textureTree.loadFromFile(getGameDir() + "/image/tree1.png");
+            treeInGame = tree.setImage(getGameDir() + "image/tree1.png");
+            tree.setRectangle(0,20,140,150);
+            tree.setRectangle(160,0,180,150);
+            tree.setRectangle(40,170,70,50);
+            tree.setRectangle(190,150,100,50);
+            tree.setRectangle(130,200,60,190);
         };
-        treePosition[0] = windowWidth - 2*treeSize[0];
-        treePosition[1] = windowHeight - treeSize[1] - grassLevel;
-        tree.setTexture(textureTree);
-        tree.setPosition(treePosition[0],treePosition[1]);
-        int treeEnd = treePosition[0]+treeSize[0];
-
+        tree.setPosition(std::rand()%(windowWidth-tree.getSize().width),windowHeight-grassLevel-tree.getSize().height);
         
-
     //Rain 
         int countDrop = 0;
         Drop drop[rainSize];
@@ -160,20 +153,9 @@ int main(int argc, char** argv){
                     drop[i].respawn(rain, wind, windowWidth, windowHeight);
                     countDrop++;
                 }; 
-                if (treeInGame){
-                //If tree zone
-                    if ((drop[i].getPosition().x >= treePosition[0])&&
-                        (drop[i].getPosition().x <= (treeEnd))){
-                            //If tree
-                            if(checkRainOnTree(drop[i])) {
-                                //Move slowly
-                                drop[i].move(0+wind/10,0.1*time*drop[i].getSpeed());
-                            }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
-                                drop[i].move(0+wind,time*drop[i].getSpeed());
-                            };
-                    }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
-                        drop[i].move(0+wind,time*drop[i].getSpeed()); 
-                    };
+                if ((treeInGame)&&(tree.checkRainOnTree(drop[i]))){
+                        //Move slowly
+                        drop[i].move(0+wind/10,0.1*time*drop[i].getSpeed());
                 }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
                     drop[i].move(0+wind,time*drop[i].getSpeed()); 
                 };
@@ -211,6 +193,7 @@ int main(int argc, char** argv){
         
         //Draw objects    
             window.clear();
+
             if (earthInGame)
                 for(int i = 0; i < earthCount[0]; i++)
                     for(int j = 0; j < earthCount[1]; j++)
@@ -233,38 +216,9 @@ int main(int argc, char** argv){
     };
     //Save information
         std::ofstream output;
-        output.open(getGameDir() + "/data/status.txt");
+        output.open(getGameDir() + "data/status.txt");
         output<< "Всього випало крапель дощу: "<<countDrop <<'\n';
         output.close();
 
     return 0;
 }
-
-bool checkRainOnTree(Drop drop){
-    if(!fullscreen){
-        int x = drop.getPosition().x;
-        int y = drop.getPosition().y;
-        return ((( x >= 350)&&
-                ( x <= 425)&&
-                ( y <= 440-grassLevel)&&
-                ( y >= 350-grassLevel))||
-                (( x >= 380)&&
-                ( x <= 394)&&
-                ( y >= 440-grassLevel)&&
-                ( y <= 497-grassLevel)));
-    }else if( drop.getPosition().y > 690-grassLevel){
-        int x = drop.getPosition().x;
-        int y = drop.getPosition().y;
-        if(( x >= 1240)&&( x <= 1377)&&( y >= 710-grassLevel)&&( y <= 860-grassLevel))
-            return true;
-        if(( x >= 1400)&&( x <= 1577)&&( y >= 690-grassLevel)&&( y <= 840-grassLevel))
-            return true;
-        if(( x >= 1430)&&( x <= 1527)&&( y >= 840-grassLevel)&&( y <= 890-grassLevel))
-            return true;
-        if(( x >= 1280)&&( x <= 1347)&&( y >= 860-grassLevel)&&( y <= 910-grassLevel))
-            return true;
-        if(( x >= 1370)&&( x <= 1427)&&( y >= 890-grassLevel)&&( y <= 1080-grassLevel))
-            return true;
-    };
-    return false;
-};

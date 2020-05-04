@@ -3,7 +3,7 @@
 std::string getPath(){
     std::string path;
     path.resize(512);
-    int ret = readlink("/proc/self/exe", &path[0], path.size()); // &path[0] - не const char*
+    int ret = readlink("/proc/self/exe", &path[0], path.size()); 
     path.resize(ret);
     return path;
 };
@@ -12,14 +12,14 @@ std::string  getGameDir(){
     std::string path = getPath();
     
     path = path.substr(0,path.rfind("/"));
-    return path;
+    return path + "/";
 };
 
 
 Display getDisplaySize(){
     Display result = {0,0};
 
-    system("xdpyinfo -display :0.0 | grep dimensions | egrep -o \"[0-9]+x[0-9]+ pixels\" | egrep -o \"[0-9]+x[0-9]+\" > tmp");
+    system("xdpyinfo | grep dimensions | egrep -o \"[0-9]+x[0-9]+ pixels\" | egrep -o \"[0-9]+x[0-9]+\" > tmp");
 
     std::ifstream tmp;
     tmp.open("tmp");
