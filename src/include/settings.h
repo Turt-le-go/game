@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fstream>
 
+
 std::string getPath();
 
 std::string getGameDir();
@@ -14,3 +15,13 @@ struct Display{
 };
 
 Display getDisplaySize();
+
+class Settings{
+    private:
+        std::string file;
+    public:
+        bool isLoaded = false;
+        Settings();
+        bool readSettingsFromFile(std::string path);
+        int getSetting(std::string name);
+};

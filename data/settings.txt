@@ -1,3 +1,12 @@
-Повноекраний режим: 1
-Рівень землі:       50
-Сила дощу:          1000
+#Comment
+
+Fullscreen: 1
+
+Earth level:       50
+
+Rain: 1
+
+Rain power:1000
+
+
+# Cool!

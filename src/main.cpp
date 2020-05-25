@@ -1,49 +1,23 @@
-#include <SFML/Graphics.hpp>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include "include/path.h"
-#include "include/Drop.h"
-#include "include/Tree.h"
-
-bool checkRainOnTree(Drop drop);
-//Default main parameters
-    Display display = getDisplaySize();
-    bool fullscreen = false;
-    int windowWidth = fullscreen? display.width : 500;
-    int windowHeight = fullscreen? display.height : 500;
-    int grassLevel = 50;
-    int rainSize = 100;
-    bool rain = true;
-//Wind
-    int wind = 0;
+//include
+    #include <SFML/Graphics.hpp>
+    #include <iostream>
+    #include <fstream>
+    #include <string>
+    #include "include/settings.h"
+    #include "include/Drop.h"
+    #include "include/Tree.h"
 
 int main(int argc, char** argv){
-    //Settings from the file 
-        std::ifstream input;
-        input.open(getGameDir() + "data/settings.txt");
-        if(input.is_open()){ 
-            char c;
-            bool flag = false;
-            std::string args[3];
-            int i = 0;
-            while(input.get(c)){
-                if ((int(c) >= 48)&&(int(c) <= 57)){
-                    args[i] += c;
-                    flag = true;
-                }else if (flag){
-                    flag = false;
-                    i++;
-                };
-            };
-            fullscreen = std::stoi(args[0]);
-            windowWidth = fullscreen? display.width : 500;
-            windowHeight = fullscreen? display.height : 500;
-            grassLevel = std::stoi(args[1]);
-            rainSize = std::stoi(args[2]);    
-        };
-        input.close();
+    //Display
+        Display display = getDisplaySize();
+        bool fullscreen = true;
+        int windowWidth = fullscreen? display.width : 500;
+        int windowHeight = fullscreen? display.height : 500;
 
+    //Settings from the file 
+        Settings settings;
+        settings.readSettingsFromFile(getGameDir()+"data/settings.txt");
+        
     //Fullscreen from terminal (on/off)
         if (argc > 1){
             if (atoi(argv[1]) == 1 ){
@@ -65,36 +39,38 @@ int main(int argc, char** argv){
         window.setFramerateLimit(60);
 
     //Grass
+
+        int earthLevel = settings.isLoaded ? settings.getSetting("Earth level"): 50;
         sf::Texture textureGrass;
         bool grassInGame = textureGrass.loadFromFile(getGameDir() + "image/grass.png");
         int grassCount = (grassInGame) ? windowWidth/textureGrass.getSize().x + bool(windowWidth%textureGrass.getSize().x) : 0;
         sf::Sprite grass[grassCount];
-        if (!(grassInGame && (grassLevel > 0))){
-            grassLevel = 0;
+        if (!(grassInGame && (earthLevel > 0))){
+            earthLevel = 0;
             grassInGame = false;
         };
         for(int i = 0; i < grassCount; i++){
             grass[i].setTexture(textureGrass);
-            grass[i].setPosition(i*textureGrass.getSize().x,windowHeight-grassLevel);
+            grass[i].setPosition(i*textureGrass.getSize().x,windowHeight-earthLevel);
         };  
 
     //Earth 
         sf::Texture textureEarth;
         bool earthInGame = textureEarth.loadFromFile(getGameDir() + "image/earth.png");
         int earthCount[]{0,0}; 
-        if (grassInGame && (grassLevel > textureGrass.getSize().y)){
+        if (grassInGame && (earthLevel > textureGrass.getSize().y)){
             if (earthInGame){
-                earthCount[0] = (grassLevel - textureGrass.getSize().y)/textureEarth.getSize().y + bool((grassLevel - textureGrass.getSize().y)%textureEarth.getSize().y);
+                earthCount[0] = (earthLevel - textureGrass.getSize().y)/textureEarth.getSize().y + bool((earthLevel - textureGrass.getSize().y)%textureEarth.getSize().y);
                 earthCount[1] = windowWidth/textureEarth.getSize().x + bool(windowWidth%textureEarth.getSize().x);
             }else{
-                grassLevel = textureGrass.getSize().y;
+                earthLevel = textureGrass.getSize().y;
             };
         };
         sf::Sprite earth[earthCount[0]][earthCount[1]];
         for(int i = 0; i < earthCount[0]; i++){
             for(int j = 0; j < earthCount[1]; j++){
                 earth[i][j].setTexture(textureEarth);
-                earth[i][j].setPosition(j*textureEarth.getSize().x, windowHeight-grassLevel + textureGrass.getSize().y + i * textureEarth.getSize().y);
+                earth[i][j].setPosition(j*textureEarth.getSize().x, windowHeight-earthLevel + textureGrass.getSize().y + i * textureEarth.getSize().y);
             };
         };
 
@@ -108,7 +84,7 @@ int main(int argc, char** argv){
         for(int i = 0; i< herbCount; i++){
             herb[i].setTexture(textureHerb);
             herb[i].setTextureRect(sf::IntRect((std::rand()%textureHerbCount)*(textureHerb.getSize().x/textureHerbCount),0,textureHerb.getSize().x/textureHerbCount,textureHerb.getSize().y));
-            herb[i].setPosition(std::rand()%windowWidth, windowHeight - grassLevel - textureHerb.getSize().y);
+            herb[i].setPosition(std::rand()%windowWidth, windowHeight - earthLevel - textureHerb.getSize().y);
         };
 
     //Tree  
@@ -126,9 +102,11 @@ int main(int argc, char** argv){
             tree.setRectangle(190,150,100,50);
             tree.setRectangle(130,200,60,190);
         };
-        tree.setPosition(std::rand()%(windowWidth-tree.getSize().width),windowHeight-grassLevel-tree.getSize().height);
+        tree.setPosition(std::rand()%(windowWidth-tree.getSize().width),windowHeight-earthLevel-tree.getSize().height);
         
     //Rain 
+        bool rain = settings.isLoaded ? settings.getSetting("Rain") : true;
+        int rainSize = settings.isLoaded ? settings.getSetting("Rain power") : 100;
         int countDrop = 0;
         Drop drop[rainSize];
         int dropSize = fullscreen ? 5:3;
@@ -136,6 +114,9 @@ int main(int argc, char** argv){
             drop[i].setSize(sf::Vector2f(dropSize,dropSize));
             drop[i].setPosition( std::rand()%windowWidth ,windowHeight);
         };
+
+    //Wind
+        int wind = 0;
 
     //Game time
         sf::Clock mainClock;
@@ -156,7 +137,7 @@ int main(int argc, char** argv){
                 if ((treeInGame)&&(tree.checkRainOnTree(drop[i]))){
                         //Move slowly
                         drop[i].move(0+wind/10,0.1*time*drop[i].getSpeed());
-                }else if (drop[i].getPosition().y <= windowHeight-grassLevel-dropSize){
+                }else if (drop[i].getPosition().y <= windowHeight-earthLevel-dropSize){
                     drop[i].move(0+wind,time*drop[i].getSpeed()); 
                 };
             };
