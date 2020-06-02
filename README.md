@@ -2,6 +2,7 @@
  
 Added:
 ---
+* New texture
 * Rain on/off
 * Wind 
 * Fullscreen mode
