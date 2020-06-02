@@ -43,7 +43,7 @@ auto main(int argc, char** argv) -> int{
         int earthLevel = settings.isLoaded ? settings.getSetting("Earth level"): 50;
         sf::Texture textureGrass;
         bool grassInGame = textureGrass.loadFromFile(getGameDir() + "image/grass.png");
-        int grassCount = (grassInGame) ? windowWidth/textureGrass.getSize().x + static_cast<unsigned int>(bool(windowWidth%textureGrass.getSize().x)) : 0;
+        int grassCount = (grassInGame) ? windowWidth/textureGrass.getSize().x + bool(windowWidth%textureGrass.getSize().x) : 0;
         sf::Sprite grass[grassCount];
         if (!(grassInGame && (earthLevel > 0))){
             earthLevel = 0;
@@ -60,8 +60,8 @@ auto main(int argc, char** argv) -> int{
         int earthCount[]{0,0}; 
         if (grassInGame && (earthLevel > textureGrass.getSize().y)){
             if (earthInGame){
-                earthCount[0] = (earthLevel - textureGrass.getSize().y)/textureEarth.getSize().y + static_cast<unsigned int>(bool((earthLevel - textureGrass.getSize().y)%textureEarth.getSize().y));
-                earthCount[1] = windowWidth/textureEarth.getSize().x + static_cast<unsigned int>(bool(windowWidth%textureEarth.getSize().x));
+                earthCount[0] = (earthLevel - textureGrass.getSize().y)/textureEarth.getSize().y + bool((earthLevel - textureGrass.getSize().y)%textureEarth.getSize().y);
+                earthCount[1] = windowWidth/textureEarth.getSize().x + bool(windowWidth%textureEarth.getSize().x);
             }else{
                 earthLevel = textureGrass.getSize().y;
             };
@@ -89,7 +89,7 @@ auto main(int argc, char** argv) -> int{
 
     //Tree  
         Tree tree;
-        bool treeInGame = 0;
+        bool treeInGame;
         if (!fullscreen){
             treeInGame = tree.setImage(getGameDir() + "image/tree0.png");
             tree.setRectangle(0,0,75,90);
@@ -105,7 +105,7 @@ auto main(int argc, char** argv) -> int{
         tree.setPosition(std::rand()%(windowWidth-tree.getSize().width),windowHeight-earthLevel-tree.getSize().height);
         
     //Rain 
-        bool rain = settings.isLoaded ? settings.getSetting("Rain") : 1 != 0;
+        bool rain = settings.isLoaded ? settings.getSetting("Rain") : true;
         int rainSize = settings.isLoaded ? settings.getSetting("Rain power") : 100;
         int countDrop = 0;
         Drop drop[rainSize];
@@ -143,7 +143,7 @@ auto main(int argc, char** argv) -> int{
             };
 
         //Close game
-            sf::Event event{}{};
+            sf::Event event;
             while (window.pollEvent(event))
             {
                 if (event.type == sf::Event::Closed) {
@@ -170,7 +170,7 @@ auto main(int argc, char** argv) -> int{
             if((sf::Keyboard::isKeyPressed(sf::Keyboard::R))&&
                 (onOffClock.getElapsedTime().asSeconds() > 0.25)){
                     onOffClock.restart();
-                    rain = (!rain);
+                    rain = !rain;
             };
         
         //Draw objects    
