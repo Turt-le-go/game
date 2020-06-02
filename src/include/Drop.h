@@ -9,5 +9,5 @@ class Drop : public sf::RectangleShape {
         Drop();
         void respawn(bool rain,int wind, int windowWidth, int windowHeight);
         sf::Time getLife();
-        float getSpeed();
+        float getSpeed() const;
 };
