@@ -1,2 +1,5 @@
 data/status.txt
+
 *.o
+
+.clang-tidy

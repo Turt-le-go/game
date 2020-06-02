@@ -19,6 +19,6 @@ void Drop::respawn(bool rain,int wind, int windowWidth, int windowHeight){
     };
     this->life += sf::milliseconds(std::rand()%9000+6000);
 };
-sf::Time Drop::getLife(){return this->life;}
+auto Drop::getLife() -> sf::Time{return this->life;}
 
-float Drop::getSpeed(){return this->speed;}
+auto Drop::getSpeed() const -> float{return this->speed;}

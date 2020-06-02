@@ -1,6 +1,6 @@
 #include "include/settings.h"
 
-std::string getPath(){
+auto getPath() -> std::string{
     std::string path;
     path.resize(512);
     int ret = readlink("/proc/self/exe", &path[0], path.size()); 
@@ -8,26 +8,26 @@ std::string getPath(){
     return path;
 };
 
-std::string  getGameDir(){
+auto getGameDir() -> std::string{
     std::string path = getPath();
-    path = path.substr(0,path.rfind("/"));
+    path = path.substr(0,path.rfind('/'));
     return path + "/";
 };
 
-Display getDisplaySize(){
+auto getDisplaySize() -> Display{
     Display result = {0,0};
 
-    system("xdpyinfo | grep dimensions | egrep -o \"[0-9]+x[0-9]+ pixels\" | egrep -o \"[0-9]+x[0-9]+\" > tmp");
+    system(R"(xdpyinfo | grep dimensions | egrep -o "[0-9]+x[0-9]+ pixels" | egrep -o "[0-9]+x[0-9]+" > tmp)");
 
     std::ifstream tmp;
     tmp.open("tmp");
     if(tmp.is_open()){ 
-        char c;
+        char c = 0;
         bool flag = false;
         std::string args[2];
         int i = 0;
         while(tmp.get(c)){
-            if ((int(c) >= 48)&&(int(c) <= 57)){
+            if ((int(c) >= int('0'))&&(int(c) <= int('9'))){
                 args[i] += c;
                 flag = true;
             }else if (flag){
@@ -44,7 +44,7 @@ Display getDisplaySize(){
 
 Settings::Settings(){};
 
-bool Settings::readSettingsFromFile(std::string path){
+auto Settings::readSettingsFromFile(const std::string& path) -> bool{
     std::fstream file;
     file.open(path);
     if(file.is_open()){
@@ -56,7 +56,7 @@ bool Settings::readSettingsFromFile(std::string path){
             line.clear();
             file.getline(l, 256);
             line = l;
-            int n = line.find("#");
+            int n = line.find('#');
             if (n != std::string::npos){
                 line = line.substr(0,n);
             };
@@ -69,7 +69,7 @@ bool Settings::readSettingsFromFile(std::string path){
     return false;
 };
 
-int Settings::getSetting(std::string name){
+auto Settings::getSetting(const std::string& name) -> int{
     int start=this->file.find(name);
     if(start == -1){ 
         return -1;

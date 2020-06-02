@@ -16,10 +16,10 @@ class Tree : public sf::Sprite {
         bool textureIsLoad = false;
         sf::Texture texture;
         size treeSize{0,0};
-        std::vector<std::array<int, 4>> rectangle;
+        std::vector<std::array<int, 4>> rectangles;
     public:
-        bool setImage(std::string path);
+        bool setImage(const std::string& path);
         void setRectangle(int x, int y, int width, int height);
         size getSize();
-        bool checkRainOnTree(Drop drop);
+        bool checkRainOnTree(const Drop& drop);
 };

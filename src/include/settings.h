@@ -22,6 +22,6 @@ class Settings{
     public:
         bool isLoaded = false;
         Settings();
-        bool readSettingsFromFile(std::string path);
-        int getSetting(std::string name);
+        bool readSettingsFromFile(const std::string& path);
+        int getSetting(const std::string& name);
 };
