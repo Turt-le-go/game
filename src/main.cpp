@@ -32,7 +32,7 @@ auto main(int argc, char** argv) -> int{
         };
 
     //Create window
-        sf::RenderWindow window(sf::VideoMode(windowWidth,windowHeight), "Game :)",(fullscreen?  sf::Style::Fullscreen : sf::Style::Close ) );
+        sf::RenderWindow window(sf::VideoMode(windowWidth,windowHeight), "Game :)");
         if (!fullscreen){
             window.setPosition(sf::Vector2i(300,200));
         };
